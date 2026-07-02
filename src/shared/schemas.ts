@@ -35,6 +35,12 @@ const COMPLEXITY_CLASSES = [
 export function normalizeComplexityClass(value: unknown): unknown {
   if (typeof value !== "string") return value;
   const normalized = value.trim().toLowerCase().replace(/[\s-]+/gu, "_");
+  if (
+    ["unknown", "undetermined", "indeterminate", "not_known", "n/a", "na"]
+      .includes(normalized)
+  ) {
+    return "uncertain";
+  }
   const exact = COMPLEXITY_CLASSES.find((item) => item === normalized);
   if (exact) return exact;
 
@@ -73,19 +79,20 @@ export const ComplexitySchema = z.object({
   class: ComplexityClassSchema,
   case: z.enum(["worst", "average", "expected", "amortized", "best", "not_applicable", "uncertain"]).default("uncertain"),
   explanation: z.string().trim().max(2_000).default("")
+}).transform((complexity) => complexity.class === "uncertain"
+  ? { ...complexity, display: "Unknown" }
+  : complexity
+);
+
+const AnalysisSideSchema = z.object({
+  approach: z.string().trim().min(1).max(3_000),
+  time: ComplexitySchema,
+  space: ComplexitySchema
 });
 
 export const AnalysisSchema = z.object({
-  recommended: z.object({
-    approach: z.string().trim().min(1).max(3_000),
-    time: ComplexitySchema,
-    space: ComplexitySchema
-  }),
-  implementation: z.object({
-    approach: z.string().trim().min(1).max(3_000),
-    time: ComplexitySchema,
-    space: ComplexitySchema
-  }),
+  recommended: AnalysisSideSchema,
+  implementation: AnalysisSideSchema,
   comparison: z.object({
     verdict: z.enum(["matches", "slower", "more_memory", "time_space_tradeoff", "different_but_valid", "uncertain"]),
     summary: z.string().trim().min(1).max(3_000),
@@ -97,6 +104,27 @@ export const AnalysisSchema = z.object({
   }),
   confidence: z.enum(["high", "medium", "low"]).default("low"),
   uncertainty: z.string().trim().max(2_000).default("")
+}).transform((analysis) => {
+  const implementationUnknown =
+    analysis.implementation.time.class === "uncertain"
+    || analysis.implementation.space.class === "uncertain"
+    || analysis.implementation.time.display.toLowerCase() === "unknown"
+    || analysis.implementation.space.display.toLowerCase() === "unknown";
+  if (!implementationUnknown) return analysis;
+  const unknown = {
+    display: "Unknown",
+    class: "uncertain" as const,
+    case: "uncertain" as const,
+    explanation: "The provider could not reliably classify the submitted code."
+  };
+  return {
+    ...analysis,
+    implementation: {
+      approach: "Unknown",
+      time: unknown,
+      space: unknown
+    }
+  };
 });
 export type Analysis = z.infer<typeof AnalysisSchema>;
 

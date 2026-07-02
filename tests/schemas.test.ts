@@ -28,6 +28,7 @@ describe("complexity class normalization", () => {
     expect(ComplexityClassSchema.parse("O(n²)")).toBe("quadratic");
     expect(ComplexityClassSchema.parse("O(2^n)")).toBe("exponential");
     expect(ComplexityClassSchema.parse("O(V + E)")).toBe("multiple_variables");
+    expect(ComplexityClassSchema.parse("Unknown")).toBe("uncertain");
   });
 
   it("still rejects unsupported classifications", () => {

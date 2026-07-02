@@ -50,4 +50,29 @@ describe("structured response parsing", () => {
     expect(parsed.recommended.approach).toBe("Hash map");
     expect(parsed.implementation.approach).toBe("Nested loops");
   });
+
+  it("canonicalizes uncertain implementation analysis to Unknown for both metrics", () => {
+    const uncertain = {
+      recommended: {
+        approach: "Hash map",
+        time: { display: "O(n)", class: "linear" },
+        space: { display: "O(n)", class: "linear" }
+      },
+      implementation: {
+        approach: "Partial traversal",
+        time: { display: "Unknown", class: "unknown" },
+        space: { display: "O(1)", class: "constant" }
+      }
+    };
+    const parsed = parseAnalysis(JSON.stringify(uncertain));
+    expect(parsed.implementation.approach).toBe("Unknown");
+    expect(parsed.implementation.time).toMatchObject({
+      display: "Unknown",
+      class: "uncertain"
+    });
+    expect(parsed.implementation.space).toMatchObject({
+      display: "Unknown",
+      class: "uncertain"
+    });
+  });
 });

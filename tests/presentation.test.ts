@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { complexitiesMatch, containsNativeTabPair, isResultTabLabel, isSubmitLabel, normalizeText, shortApproach } from "../src/content/presentation";
+import { complexitiesMatch, containsNativeTabPair, isResultTabLabel, isSubmitLabel, isUnknownComplexity, normalizeText, shortApproach } from "../src/content/presentation";
 
 describe("compact analysis presentation", () => {
   it("limits approach labels to three words", () => {
@@ -37,5 +37,16 @@ describe("compact analysis presentation", () => {
       { display: "O(mn)", class: "multiple_variables" },
       { display: "O(m+n)", class: "multiple_variables" }
     )).toBe(false);
+  });
+
+  it("recognizes implementation complexity that must not be graphed", () => {
+    expect(isUnknownComplexity({
+      display: "Unknown",
+      class: "uncertain"
+    })).toBe(true);
+    expect(isUnknownComplexity({
+      display: "O(n)",
+      class: "linear"
+    })).toBe(false);
   });
 });

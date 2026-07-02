@@ -17,29 +17,44 @@ export function graphSeries(label: string, complexity: ComplexityClass): GraphSe
   if (rank === undefined) {
     return { label, supported: false, points: [], note: graphFallback(complexity) };
   }
-  const points = Array.from({ length: 30 }, (_, index) => {
-    const x = index / 29;
-    const raw = growth(rank, 1 + x * 9);
+  const points = Array.from({ length: 10 }, (_, index) => {
+    const x = index / 9;
+    const raw = growth(rank, index + 1);
     return { x, y: raw };
   });
   return { label, supported: true, points };
 }
 
-export function normalizeGraphShapes(series: GraphSeries[], headroom = 1.12): GraphSeries[] {
+export function normalizeGraphShapes(series: GraphSeries[], headroom = 1.08): GraphSeries[] {
+  const supported = series.filter((item) => item.supported && item.points.length > 0);
+  const largestTerminalValue = Math.max(
+    1,
+    ...supported.map((item) => item.points.at(-1)?.y ?? 0)
+  );
   const padding = Math.max(1, headroom);
   return series.map((item) => item.supported ? {
     ...item,
-    points: normalizeShape(item.points, padding)
+    points: normalizeShape(item.points, largestTerminalValue, padding)
   } : item);
 }
 
-function normalizeShape(points: GraphSeries["points"], headroom: number): GraphSeries["points"] {
+function normalizeShape(
+  points: GraphSeries["points"],
+  largestTerminalValue: number,
+  headroom: number
+): GraphSeries["points"] {
   const values = points.map((point) => point.y);
   const min = Math.min(...values);
   const max = Math.max(...values);
   const range = max - min;
   if (range === 0) return points.map((point) => ({ x: point.x, y: 0.08 }));
-  return points.map((point) => ({ x: point.x, y: ((point.y - min) / range) / headroom }));
+  const terminalValue = points.at(-1)?.y ?? 0;
+  const relativeMagnitude = Math.max(0, terminalValue / largestTerminalValue);
+  const amplitude = 0.72 + 0.28 * Math.sqrt(relativeMagnitude);
+  return points.map((point) => ({
+    x: point.x,
+    y: ((point.y - min) / range) * amplitude / headroom
+  }));
 }
 
 function growth(rank: number, n: number): number {

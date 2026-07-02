@@ -33,6 +33,13 @@ export function complexitiesMatch(
   return canonicalComplexity(expected.display) === canonicalComplexity(implemented.display);
 }
 
+export function isUnknownComplexity(
+  complexity: { display: string; class: ComplexityClass }
+): boolean {
+  return complexity.class === "uncertain"
+    || normalizeText(complexity.display) === "unknown";
+}
+
 const DISPLAY_SENSITIVE_CLASSES = new Set<ComplexityClass>([
   "polynomial", "multiple_variables", "amortized", "average_case",
   "output_sensitive", "unusual", "uncertain"

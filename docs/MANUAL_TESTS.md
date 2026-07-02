@@ -7,12 +7,17 @@ Use a disposable/restricted provider key and non-contest LeetCode problems. Reco
 1. Run `npm install && npm run verify`.
 2. Load `dist/` from `chrome://extensions` with Developer mode enabled.
 3. Open a normal `https://leetcode.com/problems/<slug>/` page.
-4. Verify a purple **OpenLeet** tab is embedded beside **Test Result** or **Testcase**, with no detached launcher obscuring the page.
+4. Verify a purple **Complexity** tab is embedded beside **Test Result** or **Testcase**, with no detached launcher obscuring the page.
 5. Click **Submit** and verify the embedded tab remains available as LeetCode replaces the result panel.
 6. Open, close, and reopen the compact floating analysis card repeatedly.
-7. Confirm LeetCode editor typing, selection, scrolling, shortcuts, and resizing still work.
-8. Navigate to another problem using LeetCode SPA links; verify the old analysis is gone and the embedded tab remounts in the new result panel.
-9. Reload, delay editor loading, and retry extraction. Verify useful errors for missing problem/editor information.
+7. Confirm the card header remains branded **OpenLeet** and the embedded capsule label remains **Complexity** while idle, loading, failed, and complete.
+8. Drag the card by its header with mouse and touch/pen emulation. Verify it stays within an 8px viewport margin and header controls do not drag it.
+9. Resize the card using only its bottom edge. Verify width stays 360px, normal minimum height is 280px, compressed content scrolls, and expansion stops at the content's natural height.
+10. Resize the viewport and verify the card is re-clamped. On a viewport shorter than 296px, verify the available viewport height becomes the responsive minimum.
+11. Confirm LeetCode editor typing, selection, scrolling, shortcuts, and resizing still work.
+12. Navigate to another problem using LeetCode SPA links; verify the old analysis and window geometry are gone and the embedded tab remounts in the new result panel.
+13. Reload, delay editor loading, and retry extraction. Verify useful errors for missing problem/editor information.
+14. In a development build, register a temporary second tool at another DOM anchor. Verify both buttons mount independently and both windows can remain open, move, resize, and stack independently.
 
 ## Profiles and keys
 
@@ -68,10 +73,12 @@ For OpenAI, Anthropic, and Gemini:
 
 ## Graph and response validation
 
-1. Mock or proxy valid responses for constant through factorial classes and confirm normalized curves render.
+1. Mock or proxy valid responses for constant through factorial classes and confirm hybrid shape/relative-growth curves render.
 2. Return multiple-variable, amortised, average-case, output-sensitive, unusual, and uncertain classes; confirm explanatory fallback text replaces coordinates.
 3. Return invalid JSON, missing sections, unknown enum values, and oversized fields; verify a controlled malformed-response error and retry.
-4. Compare linear and quadratic results in both compact graphs; confirm independently normalized curves make their shapes visibly different, expected is dotted, and implementation is solid.
+4. Compare linear and quadratic results in both compact graphs; confirm quadratic overtakes near the right with moderate separation, expected is dotted, and implementation is solid.
+5. Compare identical classes and confirm their paths overlap while the expected dotted line remains visible on top.
+6. Confirm constant complexity remains a low horizontal line.
 
 ## Compact result presentation
 
@@ -80,5 +87,5 @@ For OpenAI, Anthropic, and Gemini:
 3. Confirm all extension accents, graph lines, controls, and focus states use the purple theme.
 4. Change the code, use **Analyse again**, and verify the compact result refreshes.
 5. Confirm the expected approach is concealed by default and its eye button reveals and hides only that label.
-6. Leave a declaration, return statement, placeholder, quote, or bracket incomplete; confirm OpenLeet displays **Incomplete code** without contacting GraphQL or the provider.
+6. Leave a declaration, return statement, placeholder, quote, or bracket incomplete. Confirm OpenLeet still asks the provider; when the provider cannot classify it, both implemented metrics display **Unknown** and neither graph includes an implementation curve.
 7. Confirm Expected always has a green outline; Implemented is green only when both time and space match, otherwise it has a red outline.

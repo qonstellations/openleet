@@ -39,6 +39,9 @@ Derive recommended only from the best asymptotic approach supported by the offic
 If no reference material is supplied, infer the best asymptotic approach from the problem statement and constraints.
 Derive implementation independently and only from the submitted code. Never copy recommended complexity into implementation unless the code actually implements that same complexity.
 The recommended and implementation time complexities may match while their space complexities differ, or vice versa.
+Always inspect the submitted code yourself; OpenLeet does not pre-classify it as complete or incomplete.
+If the submitted code is incomplete, truncated, syntactically invalid, or too ambiguous to analyse reliably, do not infer missing behavior. Set implementation.approach to "Unknown" and set BOTH implementation.time and implementation.space to {"display":"Unknown","class":"uncertain"}.
+Use that same Unknown representation whenever you are unsure of the implementation complexity. Never invent an implementation curve from uncertain code.
 Return exactly one complete JSON object matching the requested schema.
 Output JSON only. Do not output Markdown, code fences, comments, prefixes, suffixes, explanations, or additional keys.
 Both recommended and implementation are mandatory. Never omit either object.
@@ -69,6 +72,7 @@ export function createUserPrompt(context: ProblemContext): string {
     "```",
     "MANDATORY OUTPUT CONTRACT:",
     "Return one JSON object only. Include both recommended and implementation.",
+    'If implementation analysis is uncertain, return approach "Unknown" and BOTH time and space as {"display":"Unknown","class":"uncertain"}.',
     "Use exactly the same keys and nesting as this shape; replace the example values with the analysis:",
     ANALYSIS_EXAMPLE,
     "Do not include any text before or after the JSON object."
