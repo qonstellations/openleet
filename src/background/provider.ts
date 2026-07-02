@@ -1,7 +1,7 @@
 import type { ProviderProfile, ProblemContext } from "../shared/schemas";
 import { joinEndpoint, isLocalEndpoint } from "../shared/endpoint";
 import { OpenLeetError } from "../shared/errors";
-import { SYSTEM_PROMPT, createUserPrompt } from "./prompt";
+import { ANALYSIS_JSON_SCHEMA, SYSTEM_PROMPT, createUserPrompt } from "./prompt";
 import { parseAnalysis } from "./parser";
 
 type FetchLike = typeof fetch;
@@ -89,15 +89,43 @@ async function request(profile: ProviderProfile, apiKey: string | undefined, con
       })
     });
   }
-  return fetcher(joinEndpoint(profile.endpoint, "/chat/completions"), {
-    method: "POST", signal,
+  const url = joinEndpoint(profile.endpoint, "/chat/completions");
+  const init = openAiRequest(profile, apiKey, user, signal, true);
+  const response = await fetcher(url, init);
+  if (response.status === 400) {
+    return fetcher(url, openAiRequest(profile, apiKey, user, signal, false));
+  }
+  return response;
+}
+
+function openAiRequest(
+  profile: ProviderProfile,
+  apiKey: string | undefined,
+  user: string,
+  signal: AbortSignal,
+  strict: boolean
+): RequestInit {
+  return {
+    method: "POST",
+    signal,
     headers: { "content-type": "application/json", ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}) },
     body: JSON.stringify({
-      model: profile.model, temperature: 0,
-      response_format: { type: "json_object" },
+      model: profile.model,
+      temperature: 0,
+      max_tokens: 700,
+      response_format: strict
+        ? {
+            type: "json_schema",
+            json_schema: {
+              name: "openleet_complexity_analysis",
+              strict: true,
+              schema: ANALYSIS_JSON_SCHEMA
+            }
+          }
+        : { type: "json_object" },
       messages: [{ role: "system", content: SYSTEM_PROMPT }, { role: "user", content: user }]
     })
-  });
+  };
 }
 
 function responseText(profile: ProviderProfile, payload: any): string | undefined {

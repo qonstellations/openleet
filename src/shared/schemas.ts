@@ -20,23 +20,59 @@ export const ProblemContextSchema = z.object({
   statement: z.string().min(20).max(100_000),
   language: z.string().min(1).max(80),
   code: z.string().min(1).max(100_000),
+  reference: z.string().max(15_000).optional(),
   url: z.string().url(),
   fingerprint: z.string().min(8)
 });
 export type ProblemContext = z.infer<typeof ProblemContextSchema>;
 
-export const ComplexityClassSchema = z.enum([
+const COMPLEXITY_CLASSES = [
   "constant", "logarithmic", "linear", "linearithmic", "quadratic",
   "cubic", "polynomial", "exponential", "factorial", "multiple_variables",
   "amortized", "average_case", "output_sensitive", "unusual", "uncertain"
-]);
+] as const;
+
+export function normalizeComplexityClass(value: unknown): unknown {
+  if (typeof value !== "string") return value;
+  const normalized = value.trim().toLowerCase().replace(/[\s-]+/gu, "_");
+  const exact = COMPLEXITY_CLASSES.find((item) => item === normalized);
+  if (exact) return exact;
+
+  const unwrapped = normalized.replace(/^[^a-z]+|[^a-z_]+$/gu, "");
+  const canonical = COMPLEXITY_CLASSES.find((item) => {
+    const start = unwrapped.indexOf(item);
+    if (start < 0) return false;
+    const before = unwrapped[start - 1];
+    const after = unwrapped[start + item.length];
+    return (!before || !/[a-z]/u.test(before)) && (!after || !/[a-z]/u.test(after));
+  });
+  if (canonical) return canonical;
+
+  const bigO = value.toLowerCase().replace(/\s+/gu, "");
+  if (/^o?\(?1\)?[.;,}\]]*$/u.test(bigO)) return "constant";
+  if (/n!|factorial/u.test(bigO)) return "factorial";
+  if (/2\^n|2ⁿ|exponential/u.test(bigO)) return "exponential";
+  if (/log/u.test(bigO) && /n/u.test(bigO) && !/n(?:\*|·)?log/u.test(bigO)) return "logarithmic";
+  if (/n(?:\*|·)?logn|nlogn/u.test(bigO)) return "linearithmic";
+  if (/n(?:\^?2|²)/u.test(bigO)) return "quadratic";
+  if (/n(?:\^?3|³)/u.test(bigO)) return "cubic";
+  if (/n\^[a-z0-9]+/u.test(bigO)) return "polynomial";
+  if (/o?\([^)]*[a-z][+*,][^)]*[a-z][^)]*\)/u.test(bigO)) return "multiple_variables";
+  if (/^o?\(?n\)?[.;,}\]]*$/u.test(bigO)) return "linear";
+  return value;
+}
+
+export const ComplexityClassSchema = z.preprocess(
+  normalizeComplexityClass,
+  z.enum(COMPLEXITY_CLASSES)
+);
 export type ComplexityClass = z.infer<typeof ComplexityClassSchema>;
 
 export const ComplexitySchema = z.object({
   display: z.string().trim().min(1).max(120),
   class: ComplexityClassSchema,
-  case: z.enum(["worst", "average", "expected", "amortized", "best", "not_applicable", "uncertain"]),
-  explanation: z.string().trim().min(1).max(2_000)
+  case: z.enum(["worst", "average", "expected", "amortized", "best", "not_applicable", "uncertain"]).default("uncertain"),
+  explanation: z.string().trim().max(2_000).default("")
 });
 
 export const AnalysisSchema = z.object({
@@ -54,8 +90,12 @@ export const AnalysisSchema = z.object({
     verdict: z.enum(["matches", "slower", "more_memory", "time_space_tradeoff", "different_but_valid", "uncertain"]),
     summary: z.string().trim().min(1).max(3_000),
     mostImportantDifference: z.string().trim().min(1).max(1_000)
+  }).default({
+    verdict: "uncertain",
+    summary: "Not requested for compact analysis.",
+    mostImportantDifference: "Not requested for compact analysis."
   }),
-  confidence: z.enum(["high", "medium", "low"]),
+  confidence: z.enum(["high", "medium", "low"]).default("low"),
   uncertainty: z.string().trim().max(2_000).default("")
 });
 export type Analysis = z.infer<typeof AnalysisSchema>;
@@ -74,8 +114,11 @@ export const TestRequestSchema = z.object({
   type: z.literal("TEST_PROFILE"),
   profileId: z.string().uuid()
 });
+export const OpenOptionsRequestSchema = z.object({
+  type: z.literal("OPEN_OPTIONS")
+});
 export const RuntimeRequestSchema = z.discriminatedUnion("type", [
-  AnalyseRequestSchema, CancelRequestSchema, TestRequestSchema
+  AnalyseRequestSchema, CancelRequestSchema, TestRequestSchema, OpenOptionsRequestSchema
 ]);
 export type RuntimeRequest = z.infer<typeof RuntimeRequestSchema>;
 

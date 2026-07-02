@@ -197,7 +197,7 @@ function sendMessage(message: unknown): Promise<RuntimeResponse> {
 
 function renderPrivacy(): HTMLElement {
   const section = el("section", "privacy");
-  section.append(el("h2", "", "Privacy and security boundary"), el("p", "", "Problem text and code are sent only to the active provider when you analyse. Requests to local endpoints remain on your device. OpenLeet has no inference backend, accounts, analytics, telemetry, or analysis history. Persistent credentials can be retrieved by someone with Chrome-profile access, extension debugging access, or a compromised device."));
+  section.append(el("h2", "", "Privacy and security boundary"), el("p", "", "Problem text, current code, and bounded official/community solution references are sent only to the active provider when you analyse. References are fetched directly from LeetCode and are not stored. Requests to local endpoints remain on your device. OpenLeet has no inference backend, accounts, analytics, telemetry, or analysis history. Persistent credentials can be retrieved by someone with Chrome-profile access, extension debugging access, or a compromised device."));
   return section;
 }
 

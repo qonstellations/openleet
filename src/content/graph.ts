@@ -22,8 +22,24 @@ export function graphSeries(label: string, complexity: ComplexityClass): GraphSe
     const raw = growth(rank, 1 + x * 9);
     return { x, y: raw };
   });
-  const max = Math.max(...points.map((point) => point.y));
-  return { label, supported: true, points: points.map((point) => ({ x: point.x, y: point.y / max })) };
+  return { label, supported: true, points };
+}
+
+export function normalizeGraphShapes(series: GraphSeries[], headroom = 1.12): GraphSeries[] {
+  const padding = Math.max(1, headroom);
+  return series.map((item) => item.supported ? {
+    ...item,
+    points: normalizeShape(item.points, padding)
+  } : item);
+}
+
+function normalizeShape(points: GraphSeries["points"], headroom: number): GraphSeries["points"] {
+  const values = points.map((point) => point.y);
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min;
+  if (range === 0) return points.map((point) => ({ x: point.x, y: 0.08 }));
+  return points.map((point) => ({ x: point.x, y: ((point.y - min) / range) / headroom }));
 }
 
 function growth(rank: number, n: number): number {
@@ -56,7 +72,7 @@ function graphFallback(complexity: ComplexityClass): string {
   return messages[complexity] ?? "This complexity cannot be graphed reliably.";
 }
 
-export function svgPath(series: GraphSeries, width = 300, height = 150): string {
+export function svgPath(series: GraphSeries, width = 300, height = 110): string {
   if (!series.supported) return "";
   return series.points.map((point, index) => {
     const x = 10 + point.x * (width - 20);

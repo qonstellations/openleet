@@ -7,11 +7,12 @@ Use a disposable/restricted provider key and non-contest LeetCode problems. Reco
 1. Run `npm install && npm run verify`.
 2. Load `dist/` from `chrome://extensions` with Developer mode enabled.
 3. Open a normal `https://leetcode.com/problems/<slug>/` page.
-4. Verify **Analyse with OpenLeet** appears after the page loads.
-5. Open, close, collapse, expand, and reopen the drawer repeatedly.
-6. Confirm LeetCode editor typing, selection, scrolling, shortcuts, and resizing still work.
-7. Navigate to another problem using LeetCode SPA links; verify the launcher persists and old analysis is gone.
-8. Reload, delay editor loading, and retry extraction. Verify useful errors for missing problem/editor information.
+4. Verify a purple **OpenLeet** tab is embedded beside **Test Result** or **Testcase**, with no detached launcher obscuring the page.
+5. Click **Submit** and verify the embedded tab remains available as LeetCode replaces the result panel.
+6. Open, close, and reopen the compact floating analysis card repeatedly.
+7. Confirm LeetCode editor typing, selection, scrolling, shortcuts, and resizing still work.
+8. Navigate to another problem using LeetCode SPA links; verify the old analysis is gone and the embedded tab remounts in the new result panel.
+9. Reload, delay editor loading, and retry extraction. Verify useful errors for missing problem/editor information.
 
 ## Profiles and keys
 
@@ -32,9 +33,10 @@ For OpenAI, Anthropic, and Gemini:
 
 1. Configure the documented endpoint, exact available model ID, and a restricted key.
 2. Test the profile, then analyse a known problem with current code.
-3. Verify recommended/user approach, both time/space values and derivations, comparison, confidence, and graph/fallback.
-4. Test an invalid key, unavailable model, revoked endpoint permission, short timeout, and malformed-response model/proxy.
-5. Verify Gemini's key does not appear in the request URL using the extension service-worker network inspector.
+3. Verify expected/implemented approach labels, both time/space values, and graph/fallback.
+4. Verify the expected result follows the best accessible official editorial approach while the implemented result follows only the current editor code.
+5. Test an invalid key, unavailable model, revoked endpoint permission, short timeout, and malformed-response model/proxy.
+6. Verify Gemini's key does not appear in the request URL using the extension service-worker network inspector.
 
 ## Ollama
 
@@ -69,4 +71,14 @@ For OpenAI, Anthropic, and Gemini:
 1. Mock or proxy valid responses for constant through factorial classes and confirm normalized curves render.
 2. Return multiple-variable, amortised, average-case, output-sensitive, unusual, and uncertain classes; confirm explanatory fallback text replaces coordinates.
 3. Return invalid JSON, missing sections, unknown enum values, and oversized fields; verify a controlled malformed-response error and retry.
-4. Confirm graph labels state relative growth and not execution time.
+4. Compare linear and quadratic results in both compact graphs; confirm independently normalized curves make their shapes visibly different, expected is dotted, and implementation is solid.
+
+## Compact result presentation
+
+1. Confirm expected and implemented summaries each show time, space, and an approach label of at most three words.
+2. Confirm the floating result remains usable at narrow viewport sizes without covering the full editor.
+3. Confirm all extension accents, graph lines, controls, and focus states use the purple theme.
+4. Change the code, use **Analyse again**, and verify the compact result refreshes.
+5. Confirm the expected approach is concealed by default and its eye button reveals and hides only that label.
+6. Leave a declaration, return statement, placeholder, quote, or bracket incomplete; confirm OpenLeet displays **Incomplete code** without contacting GraphQL or the provider.
+7. Confirm Expected always has a green outline; Implemented is green only when both time and space match, otherwise it has a red outline.

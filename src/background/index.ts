@@ -6,7 +6,7 @@ import { analyseWithProvider, classifyNetworkError, testProviderConnection } fro
 
 const active = new Map<string, AbortController>();
 
-chrome.action.onClicked.addListener(() => chrome.runtime.openOptionsPage());
+chrome.action.onClicked.addListener(() => void openOptionsPage());
 
 chrome.runtime.onMessage.addListener((raw: unknown, _sender, sendResponse: (response: RuntimeResponse) => void) => {
   const parsed = RuntimeRequestSchema.safeParse(raw);
@@ -21,11 +21,28 @@ chrome.runtime.onMessage.addListener((raw: unknown, _sender, sendResponse: (resp
     sendResponse({ ok: true, requestId: message.requestId, message: "Cancelled" });
     return false;
   }
+  if (message.type === "OPEN_OPTIONS") {
+    void openOptionsPage()
+      .then(() => sendResponse({ ok: true, message: "Opened settings" }))
+      .catch((error: unknown) => sendResponse({ ok: false, ...sanitizeError(error) }));
+    return true;
+  }
   void handle(message).then(sendResponse);
   return true;
 });
 
-async function handle(message: Exclude<ReturnType<typeof RuntimeRequestSchema.parse>, { type: "CANCEL" }>): Promise<RuntimeResponse> {
+async function openOptionsPage(): Promise<void> {
+  const runtime = chrome.runtime as typeof chrome.runtime & {
+    openOptionsPage?: () => void | Promise<void>;
+  };
+  if (typeof runtime.openOptionsPage === "function") {
+    await runtime.openOptionsPage();
+    return;
+  }
+  await chrome.tabs.create({ url: chrome.runtime.getURL("options.html") });
+}
+
+async function handle(message: Exclude<ReturnType<typeof RuntimeRequestSchema.parse>, { type: "CANCEL" | "OPEN_OPTIONS" }>): Promise<RuntimeResponse> {
   try {
     const profile = (await listProfiles()).find((item) => item.id === message.profileId);
     if (!profile) throw new OpenLeetError("VALIDATION", "The selected provider profile no longer exists.");

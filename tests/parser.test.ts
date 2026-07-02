@@ -13,4 +13,41 @@ describe("structured response parsing", () => {
     expect(() => parseAnalysis('{"recommended":{}}')).toThrow(/incomplete|unsupported/i);
     expect(() => parseAnalysis("not json")).toThrow(/malformed JSON/i);
   });
+
+  it("accepts the compact response used by the result card", () => {
+    const compact = {
+      recommended: {
+        approach: "Hash map",
+        time: { display: "O(n)", class: "linear" },
+        space: { display: "O(n)", class: "linear" }
+      },
+      implementation: {
+        approach: "Nested loops",
+        time: { display: "O(n²)", class: "quadratic" },
+        space: { display: "O(1)", class: "constant" }
+      }
+    };
+    const parsed = parseAnalysis(JSON.stringify(compact));
+    expect(parsed.recommended.time.case).toBe("uncertain");
+    expect(parsed.recommended.time.explanation).toBe("");
+    expect(parsed.comparison.verdict).toBe("uncertain");
+  });
+
+  it("extracts narrow expected and actual aliases from otherwise valid JSON", () => {
+    const aliased = {
+      expected: {
+        approach: "Hash map",
+        time: { display: "O(n)", class: "linear" },
+        space: { display: "O(n)", class: "linear" }
+      },
+      actual: {
+        approach: "Nested loops",
+        time: { display: "O(n²)", class: "quadratic" },
+        space: { display: "O(1)", class: "constant" }
+      }
+    };
+    const parsed = parseAnalysis(JSON.stringify(aliased));
+    expect(parsed.recommended.approach).toBe("Hash map");
+    expect(parsed.implementation.approach).toBe("Nested loops");
+  });
 });

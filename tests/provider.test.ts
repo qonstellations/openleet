@@ -16,6 +16,10 @@ describe("provider request construction", () => {
     expect(String(url)).not.toContain("sk-secret-value");
     expect((init?.headers as Record<string, string>).authorization).toBe("Bearer sk-secret-value");
     expect(String(init?.body)).toContain("Two Sum");
+    const body = JSON.parse(String(init?.body));
+    expect(body.response_format.type).toBe("json_schema");
+    expect(body.response_format.json_schema.strict).toBe(true);
+    expect(body.response_format.json_schema.schema.required).toEqual(["recommended", "implementation"]);
   });
   it("uses headers, not query strings, for Gemini keys", async () => {
     const gemini = { ...profile, type: "gemini" as const, endpoint: "https://generativelanguage.googleapis.com/v1beta" };
@@ -31,6 +35,17 @@ describe("provider request construction", () => {
     const fetcher = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit): Promise<Response> =>
       ok({ content: [{ type: "text", text: JSON.stringify(analysis) }] }));
     await expect(analyseWithProvider(anthropic, "key", context, new AbortController().signal, fetcher as typeof fetch)).resolves.toEqual(analysis);
+  });
+  it("falls back to JSON-object mode when a custom endpoint rejects JSON Schema", async () => {
+    const custom = { ...profile, type: "custom" as const };
+    const fetcher = vi.fn()
+      .mockResolvedValueOnce(new Response('{"error":{"message":"json_schema unsupported"}}', { status: 400 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        choices: [{ message: { content: JSON.stringify(analysis) } }]
+      }), { status: 200, headers: { "content-type": "application/json" } }));
+    await expect(analyseWithProvider(custom, undefined, context, new AbortController().signal, fetcher as typeof fetch)).resolves.toEqual(analysis);
+    expect(JSON.parse(String(fetcher.mock.calls[0]?.[1]?.body)).response_format.type).toBe("json_schema");
+    expect(JSON.parse(String(fetcher.mock.calls[1]?.[1]?.body)).response_format.type).toBe("json_object");
   });
   it("reports local connection failures usefully", () => {
     expect(() => classifyNetworkError(new TypeError("fetch failed"), { ...profile, type: "custom", endpoint: "http://localhost:11434/v1" })).toThrow(/local model server/i);
