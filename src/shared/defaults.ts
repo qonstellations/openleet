@@ -8,4 +8,4 @@ export const DEFAULT_ENDPOINTS: Record<ProviderType, string> = {
 };
 
 export const PERSISTENT_KEY_WARNING =
-  "The key is stored locally in your Chrome profile for convenience. It is not protected by hardware-backed or operating-system credential storage. Someone with access to this Chrome profile, extension debugging tools, or a compromised device may be able to retrieve it. Use a dedicated API key with restricted permissions and spending limits.";
+  "Persistent storage keeps this API key in your Chrome profile until you remove it. Chrome extension storage is not a credential vault and does not provide operating-system or hardware-backed protection. Anyone with access to this browser profile, extension debugging tools, or the device may be able to retrieve the key. Use a dedicated key with minimum permissions and strict spending limits.";

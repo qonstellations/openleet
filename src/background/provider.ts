@@ -14,7 +14,10 @@ export async function analyseWithProvider(
   fetcher: FetchLike = fetch
 ) {
   if (profile.type !== "custom" && !apiKey) {
-    throw new OpenLeetError("AUTHENTICATION", "This provider requires an API key. Add one in OpenLeet settings.");
+    throw new OpenLeetError(
+      "AUTHENTICATION",
+      "This provider requires an API key. Add a valid key in OpenLeet settings and try again."
+    );
   }
   const response = await request(profile, apiKey, context, signal, fetcher);
   if (!response.ok) throw await responseError(response, profile);
@@ -34,7 +37,10 @@ export async function testProviderConnection(
   fetcher: FetchLike = fetch
 ): Promise<string> {
   if (profile.type !== "custom" && !apiKey) {
-    throw new OpenLeetError("AUTHENTICATION", "This provider requires an API key. Add one before testing.");
+    throw new OpenLeetError(
+      "AUTHENTICATION",
+      "This provider requires an API key. Add a valid key before verifying the connection."
+    );
   }
   const headers: Record<string, string> = {};
   if (profile.type === "anthropic") {
@@ -60,9 +66,15 @@ export async function testProviderConnection(
     ? (payload?.models ?? []).map((item: any) => String(item?.name ?? "").replace(/^models\//, ""))
     : (payload?.data ?? payload?.models ?? []).map((item: any) => String(item?.id ?? item?.name ?? "").replace(/^models\//, ""));
   if (ids.length && !ids.includes(profile.model.replace(/^models\//, ""))) {
-    throw new OpenLeetError("MODEL_UNAVAILABLE", `The endpoint is reachable, but model "${profile.model}" was not listed.`);
+    throw new OpenLeetError(
+      "MODEL_UNAVAILABLE",
+      `The endpoint is reachable, but model “${profile.model}” is not available. Verify the model identifier and try again.`
+    );
   }
-  return `Connected to ${profile.name}${ids.length ? `; model "${profile.model}" is available` : ""}.`;
+  if (ids.length) {
+    return `“${profile.name}” is reachable. Model “${profile.model}” is available for requests.`;
+  }
+  return `“${profile.name}” responded successfully. The endpoint did not provide a model list, so model availability could not be verified.`;
 }
 
 async function request(profile: ProviderProfile, apiKey: string | undefined, context: ProblemContext, signal: AbortSignal, fetcher: FetchLike) {
@@ -147,15 +159,43 @@ async function responseError(response: Response, profile: ProviderProfile): Prom
     const payload: any = await response.json();
     detail = payload?.error?.message ?? payload?.message ?? "";
   } catch { /* use status */ }
-  if (response.status === 401 || response.status === 403) return new OpenLeetError("AUTHENTICATION", "Authentication failed. Replace the API key and verify provider access.");
-  if (response.status === 404) return new OpenLeetError("MODEL_UNAVAILABLE", `The endpoint or model "${profile.model}" was not found.`);
-  if (response.status === 400 && /model/i.test(detail)) return new OpenLeetError("MODEL_UNAVAILABLE", `The provider rejected model "${profile.model}".`);
-  return new OpenLeetError("NETWORK", `Provider request failed (${response.status})${detail ? `: ${detail}` : "."}`);
+  if (response.status === 401 || response.status === 403) {
+    return new OpenLeetError(
+      "AUTHENTICATION",
+      "The provider rejected authentication. Verify the API key and its permissions, then try again."
+    );
+  }
+  if (response.status === 404) {
+    return new OpenLeetError(
+      "MODEL_UNAVAILABLE",
+      `OpenLeet could not find model “${profile.model}” at this endpoint. Verify the endpoint and model identifier.`
+    );
+  }
+  if (response.status === 400 && /model/i.test(detail)) {
+    return new OpenLeetError(
+      "MODEL_UNAVAILABLE",
+      `The provider rejected model “${profile.model}”. Verify the model identifier and provider compatibility.`
+    );
+  }
+  return new OpenLeetError(
+    "NETWORK",
+    detail
+      ? `The provider returned HTTP ${response.status}: ${detail}`
+      : `The provider returned HTTP ${response.status}. Verify the endpoint and try again.`
+  );
 }
 
 export function classifyNetworkError(error: unknown, profile: ProviderProfile): never {
   if (error instanceof OpenLeetError) throw error;
   if (error instanceof DOMException && error.name === "AbortError") throw error;
-  if (isLocalEndpoint(profile.endpoint)) throw new OpenLeetError("LOCAL_UNAVAILABLE", "The local model server is unavailable. Start it, verify its port, and allow this endpoint in settings.");
-  throw new OpenLeetError("NETWORK", "The provider could not be reached. Check the endpoint, network, and extension host permission.");
+  if (isLocalEndpoint(profile.endpoint)) {
+    throw new OpenLeetError(
+      "LOCAL_UNAVAILABLE",
+      "The local model server is unavailable. Start the server, verify its port, and confirm endpoint access in OpenLeet settings."
+    );
+  }
+  throw new OpenLeetError(
+    "NETWORK",
+    "The provider could not be reached. Verify the endpoint, network connection, and endpoint permission."
+  );
 }

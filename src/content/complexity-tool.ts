@@ -101,7 +101,7 @@ export class ComplexityController implements ToolController {
       },
       {
         id: "settings",
-        accessibleLabel: "Settings",
+        accessibleLabel: "Open settings",
         icon: "⚙",
         onActivate: () => void this.openOptions()
       }
@@ -365,7 +365,7 @@ export class ComplexityController implements ToolController {
         || liveBeforeRequest.slug !== requestedSlug
       ) {
         throw new Error(
-          "The problem changed while loading solution references. The stale request was discarded."
+          "The problem changed while references were loading, so the analysis was cancelled. Run it again on the current problem."
         );
       }
       const requestContext = reference ? { ...extracted, reference } : extracted;
@@ -383,7 +383,7 @@ export class ComplexityController implements ToolController {
       const live = this.currentPageStatus();
       if (!live.supported || live.slug !== requestContext.slug) {
         throw new Error(
-          "The problem changed during analysis. The stale result was discarded."
+          "The problem changed during analysis, so the outdated result was not displayed. Run the analysis again."
         );
       }
       const latest = await extractProblem(live.slug);
@@ -396,7 +396,7 @@ export class ComplexityController implements ToolController {
         live.slug
       )) {
         throw new Error(
-          "The code, language, or problem changed during analysis. The stale result was discarded."
+          "The code, language, or problem changed during analysis, so the outdated result was not displayed. Run the analysis again."
         );
       }
       if (!response.analysis) throw new Error("The provider returned no analysis.");

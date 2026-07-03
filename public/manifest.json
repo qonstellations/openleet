@@ -1,9 +1,16 @@
 {
   "manifest_version": 3,
   "name": "OpenLeet",
+  "short_name": "OpenLeet",
   "description": "Analyse the algorithmic complexity of your current LeetCode solution using your own AI provider.",
   "version": "1.0.0",
   "minimum_chrome_version": "116",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
   "permissions": ["storage"],
   "optional_host_permissions": ["http://*/*", "https://*/*"],
   "host_permissions": ["https://leetcode.com/*"],
@@ -14,7 +21,15 @@
     "run_at": "document_idle"
   }],
   "options_page": "options.html",
-  "action": { "default_title": "Open OpenLeet settings" },
+  "action": {
+    "default_title": "OpenLeet settings",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
   "web_accessible_resources": [{
     "resources": ["page-bridge.js"],
     "matches": ["https://leetcode.com/*"]

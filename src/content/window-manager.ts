@@ -152,8 +152,8 @@ export class ToolWindowManager {
       entry.actions.append(button);
     }
     const close = element("button", "icon", "×");
-    close.setAttribute("aria-label", "Close");
-    close.title = "Close";
+    close.setAttribute("aria-label", "Close OpenLeet");
+    close.title = "Close OpenLeet";
     close.addEventListener("click", () => this.close(entry.id));
     entry.actions.append(close);
   }

@@ -45,9 +45,19 @@ async function openOptionsPage(): Promise<void> {
 async function handle(message: Exclude<ReturnType<typeof RuntimeRequestSchema.parse>, { type: "CANCEL" | "OPEN_OPTIONS" }>): Promise<RuntimeResponse> {
   try {
     const profile = (await listProfiles()).find((item) => item.id === message.profileId);
-    if (!profile) throw new OpenLeetError("VALIDATION", "The selected provider profile no longer exists.");
+    if (!profile) {
+      throw new OpenLeetError(
+        "VALIDATION",
+        "The selected provider profile is no longer available. Choose another profile and try again."
+      );
+    }
     const allowed = await chrome.permissions.contains({ origins: [endpointOrigin(profile.endpoint)] });
-    if (!allowed) throw new OpenLeetError("ENDPOINT_PERMISSION", "OpenLeet does not have permission to contact this endpoint. Edit or test the profile in settings to grant access.");
+    if (!allowed) {
+      throw new OpenLeetError(
+        "ENDPOINT_PERMISSION",
+        "Endpoint access has not been granted. Open the provider profile in settings and verify the connection."
+      );
+    }
     const key = await getApiKey(profile);
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort("timeout"), profile.timeoutMs);
@@ -61,7 +71,12 @@ async function handle(message: Exclude<ReturnType<typeof RuntimeRequestSchema.pa
       const analysis = await analyseWithProvider(profile, key, message.context, controller.signal);
       return { ok: true, requestId, fingerprint: message.context.fingerprint, analysis };
     } catch (error) {
-      if (controller.signal.aborted && controller.signal.reason === "timeout") throw new OpenLeetError("TIMEOUT", `The provider did not respond within ${profile.timeoutMs / 1000} seconds.`);
+      if (controller.signal.aborted && controller.signal.reason === "timeout") {
+        throw new OpenLeetError(
+          "TIMEOUT",
+          `The provider did not respond within ${profile.timeoutMs / 1000} seconds. Increase the timeout or verify provider availability.`
+        );
+      }
       classifyNetworkError(error, profile);
     } finally {
       clearTimeout(timer);

@@ -176,11 +176,11 @@ HTTP endpoints are permitted for local workflows. Use HTTPS for remote endpoints
 
 ## API-key handling
 
-**Remember until Chrome closes** is the default. The key is stored in `chrome.storage.session`, is not included in profile objects, and is lost when Chrome's extension session ends.
+**Keep until Chrome closes** is the default. The key is stored in `chrome.storage.session`, is not included in profile objects, and is lost when Chrome's extension session ends.
 
 **Remember in this Chrome profile** is opt-in. Before enabling it, OpenLeet displays this warning:
 
-> The key is stored locally in your Chrome profile for convenience. It is not protected by hardware-backed or operating-system credential storage. Someone with access to this Chrome profile, extension debugging tools, or a compromised device may be able to retrieve it. Use a dedicated API key with restricted permissions and spending limits.
+> Persistent storage keeps this API key in your Chrome profile until you remove it. Chrome extension storage is not a credential vault and does not provide operating-system or hardware-backed protection. Anyone with access to this browser profile, extension debugging tools, or the device may be able to retrieve the key. Use a dedicated key with minimum permissions and strict spending limits.
 
 Keys are read only by extension pages and the service worker. They are never sent to the LeetCode page, page DOM, attributes, analytics, telemetry, URLs, query parameters, or error text. A provider key is sent only in that provider's required request header. Removing a key clears both session and persistent storage copies.
 

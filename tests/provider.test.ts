@@ -53,7 +53,16 @@ describe("provider request construction", () => {
   it("tests endpoint authentication and model availability", async () => {
     const fetcher = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit): Promise<Response> =>
       ok({ data: [{ id: "test-model" }] }));
-    await expect(testProviderConnection(profile, "key", new AbortController().signal, fetcher as typeof fetch)).resolves.toMatch(/available/);
+    await expect(
+      testProviderConnection(
+        profile,
+        "key",
+        new AbortController().signal,
+        fetcher as typeof fetch
+      )
+    ).resolves.toBe(
+      "“Test” is reachable. Model “test-model” is available for requests."
+    );
     expect(fetcher.mock.calls[0]?.[0]).toBe("https://api.example.com/v1/models");
   });
   it("honours cancellation", async () => {

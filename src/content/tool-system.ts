@@ -111,7 +111,7 @@ export class ToolButtonManager {
     icon.className = "sparkle";
     icon.textContent = this.definition.buttonIcon;
     button.append(icon, document.createTextNode(this.definition.buttonLabel));
-    button.title = `Open ${this.definition.buttonLabel} in OpenLeet`;
+    button.title = `Open ${this.definition.buttonLabel}`;
     button.addEventListener("click", this.onActivate);
     this.root.append(button);
   }

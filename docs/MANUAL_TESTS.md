@@ -25,12 +25,13 @@ Use a disposable/restricted provider key and non-contest LeetCode problems. Reco
 2. Create, edit, select, and delete profiles for each supported provider type.
 3. Verify the panel can switch among existing profiles and displays profile/model.
 4. Save/test a profile and approve its endpoint permission. Deny once and verify the permission error.
-5. Save a key with **Remember until Chrome closes**. Verify analysis works, fully exit Chrome, reopen it, and verify the key must be entered again.
-6. Select persistent storage. Verify the full security warning appears before storage is enabled and cancellation prevents the change.
-7. Restart Chrome and verify the persistent key still works.
-8. Replace the key, then select **Remove key** and verify authenticated analysis fails cleanly.
-9. Inspect the LeetCode DOM, URL, console, and content-script messages. Confirm no API key appears.
-10. Delete the profile and confirm its key no longer works and no orphaned active selection breaks the UI.
+5. Confirm successful saves, tests, key removal, and profile deletion use a green two-line status banner. Confirm validation, permission, authentication, model, and network failures use a red banner; in-progress connection testing remains purple.
+6. Save a key with **Keep until Chrome closes**. Verify analysis works, fully exit Chrome, reopen it, and verify the key must be entered again.
+7. Confirm **Remember in this Chrome profile** is listed first but the yellow warning remains hidden while **Keep until Chrome closes** is selected. Select persistent storage and verify the full warning appears before storage is enabled; switch back and verify it disappears.
+8. Restart Chrome and verify the persistent key still works.
+9. Replace the key, then select **Remove key** and verify authenticated analysis fails cleanly.
+10. Inspect the LeetCode DOM, URL, console, and content-script messages. Confirm no API key appears.
+11. Delete the profile and confirm its key no longer works and no orphaned active selection breaks the UI.
 
 ## Cloud providers
 

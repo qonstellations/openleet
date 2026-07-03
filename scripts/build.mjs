@@ -20,4 +20,5 @@ await build({
 });
 await cp("public/manifest.json", "dist/manifest.json");
 await cp("public/options.html", "dist/options.html");
+await cp("public/icons", "dist/icons", { recursive: true });
 console.log("Built OpenLeet into dist/");
