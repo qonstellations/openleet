@@ -1,4 +1,4 @@
-import type { PageStatus } from "./restrictions";
+import type { PageStatus } from "./page-status";
 import { STYLES } from "./styles";
 
 export type ToolButtonInsertion = "before" | "after" | "prepend" | "append";
@@ -6,6 +6,7 @@ export type ToolButtonInsertion = "before" | "after" | "prepend" | "append";
 export interface ToolButtonMount {
   anchor: HTMLElement;
   strategy: ToolButtonInsertion;
+  placement?: "inline" | "floating";
   isValid?: (buttonHost: HTMLElement) => boolean;
 }
 
@@ -86,7 +87,7 @@ export class ToolButtonManager {
   }
 
   sync(page: PageStatus): void {
-    if (!page.supported || page.restricted) {
+    if (!page.supported) {
       this.remove();
       return;
     }
@@ -95,6 +96,7 @@ export class ToolButtonManager {
       this.remove();
       return;
     }
+    this.host.dataset.openleetPlacement = nextMount.placement ?? "inline";
     if (!this.isCurrentMountValid(nextMount)) {
       insertAtMount(this.host, nextMount);
       this.currentMount = nextMount;
@@ -129,6 +131,9 @@ export class ToolButtonManager {
   private isCurrentMountValid(nextMount: ToolButtonMount): boolean {
     const current = this.currentMount;
     if (!current || current.anchor !== nextMount.anchor || current.strategy !== nextMount.strategy) {
+      return false;
+    }
+    if ((current.placement ?? "inline") !== (nextMount.placement ?? "inline")) {
       return false;
     }
     if (!this.host.isConnected || !isAtMount(this.host, nextMount)) return false;

@@ -194,7 +194,7 @@ export class ToolWindowManager {
       if (event.button !== 0 || isInteractiveTarget(event.target)) return;
       event.preventDefault();
       this.raise(entry);
-      entry.panel.classList.add("interacting");
+      entry.panel.classList.add("interacting", "no-animation");
       const rect = entry.panel.getBoundingClientRect();
       const start = { left: rect.left, top: rect.top };
       const pointerStart = { left: event.clientX, top: event.clientY };
@@ -234,7 +234,7 @@ export class ToolWindowManager {
       event.preventDefault();
       event.stopPropagation();
       this.raise(entry);
-      entry.panel.classList.add("interacting");
+      entry.panel.classList.add("interacting", "no-animation");
       const startHeight = entry.panel.getBoundingClientRect().height;
       const startY = event.clientY;
       entry.hasCustomPosition = true;

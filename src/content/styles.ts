@@ -1,6 +1,7 @@
 export const STYLES = `
 :host{all:initial;color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif}
 :host([data-openleet-tool-button]){position:relative;z-index:2;display:inline-flex;align-self:stretch;vertical-align:middle;height:auto;min-height:0;pointer-events:auto}
+:host([data-openleet-tool-button][data-openleet-placement="floating"]){position:fixed;right:18px;bottom:18px;z-index:2147483647;align-self:auto;height:auto}
 *{box-sizing:border-box}
 button,select{font:inherit}
 .tool-button-root{display:flex;align-items:center;height:100%;min-height:0}
@@ -8,7 +9,7 @@ button,select{font:inherit}
 .result-tab:hover{color:#ede9fe;background:#8b5cf624;box-shadow:0 0 14px #8b5cf66b,inset 0 0 10px #8b5cf62e}.result-tab.active{color:#f5f3ff;background:#7c3aed30;box-shadow:0 0 16px #8b5cf680,inset 0 0 10px #a78bfa33}
 .sparkle{color:#a78bfa;font-size:16px;filter:drop-shadow(0 0 6px #8b5cf699)}
 .panel{position:fixed;width:360px;overflow:hidden;background:linear-gradient(155deg,#171126 0%,#100d1b 54%,#0c0b12 100%);color:#f4f1ff;border:1px solid #7c3aed66;border-radius:16px;box-shadow:0 24px 70px #000a,0 0 34px #7c3aed20;display:flex;flex-direction:column;animation:appear .16s ease-out}
-.panel.interacting,.panel.no-animation{animation:none}
+.panel.no-animation{animation:none}
 @keyframes appear{from{opacity:0;transform:translateY(7px) scale(.985)}to{opacity:1;transform:none}}
 .header{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #8b5cf633;background:linear-gradient(105deg,#271744,#181126);cursor:grab;touch-action:none;user-select:none;flex:none}
 .header:active{cursor:grabbing}

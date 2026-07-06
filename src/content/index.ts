@@ -1,5 +1,5 @@
 import { createComplexityTool } from "./complexity-tool";
-import { detectPageStatus, type PageStatus } from "./restrictions";
+import { detectPageStatus, type PageStatus } from "./page-status";
 import {
   ToolButtonManager,
   ToolRegistry,
@@ -54,10 +54,7 @@ document.addEventListener("click", onDocumentClick, true);
 window.addEventListener("pagehide", dispose, { once: true });
 
 function readPageStatus(): PageStatus {
-  return detectPageStatus(
-    new URL(location.href),
-    document.body?.innerText ?? ""
-  );
+  return detectPageStatus(new URL(location.href));
 }
 
 function onNavigation(): void {

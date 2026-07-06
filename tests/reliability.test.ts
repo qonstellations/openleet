@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { isResponseCurrent } from "../src/content/stale";
 import { sanitizeError, OpenLeetError } from "../src/shared/errors";
-import { detectPageStatus } from "../src/content/restrictions";
+import { detectPageStatus } from "../src/content/page-status";
 
 describe("stale-response prevention", () => {
   it("requires matching request, code fingerprint, and problem", () => {
@@ -12,13 +12,20 @@ describe("stale-response prevention", () => {
   });
 });
 
-describe("restricted environments", () => {
-  it("blocks contest and assessment routes", () => {
-    expect(detectPageStatus(new URL("https://leetcode.com/contest/weekly-contest-1/")).restricted).toBe(true);
-    expect(detectPageStatus(new URL("https://leetcode.com/assessment/test/")).restricted).toBe(true);
+describe("page eligibility", () => {
+  it("supports only leetcode.com problem routes", () => {
+    expect(detectPageStatus(new URL("https://leetcode.com/contest/weekly-contest-1/")).supported).toBe(false);
+    expect(detectPageStatus(new URL("https://leetcode.com/assessment/test/")).supported).toBe(false);
+    expect(detectPageStatus(new URL("https://example.com/problems/two-sum/")).supported).toBe(false);
+    expect(detectPageStatus(new URL("http://leetcode.com/problems/two-sum/")).supported).toBe(false);
   });
-  it("supports normal problem routes", () => {
+
+  it("supports every problem route without inspecting page content", () => {
     expect(detectPageStatus(new URL("https://leetcode.com/problems/two-sum/"))).toMatchObject({ supported: true, slug: "two-sum" });
+    expect(detectPageStatus(new URL("https://leetcode.com/problems/weekly-contest-problem/"))).toMatchObject({
+      supported: true,
+      slug: "weekly-contest-problem"
+    });
   });
 });
 

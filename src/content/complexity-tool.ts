@@ -37,13 +37,20 @@ export function createComplexityTool(): ToolDefinition {
 
 export function resolveComplexityButtonMount(): ToolButtonMount | undefined {
   const anchor = findResultTab();
-  if (!anchor?.parentElement) return undefined;
+  if (anchor?.parentElement) {
+    return {
+      anchor,
+      strategy: "after",
+      isValid: (buttonHost) =>
+        buttonHost.parentElement === anchor.parentElement
+        && buttonHost.previousElementSibling === anchor
+    };
+  }
+  if (!document.body) return undefined;
   return {
-    anchor,
-    strategy: "after",
-    isValid: (buttonHost) =>
-      buttonHost.parentElement === anchor.parentElement
-      && buttonHost.previousElementSibling === anchor
+    anchor: document.body,
+    strategy: "append",
+    placement: "floating"
   };
 }
 
@@ -63,14 +70,6 @@ export class ComplexityController implements ToolController {
   }
 
   renderBody(): Node[] {
-    const page = this.toolContext.getPageStatus();
-    if (page.restricted) {
-      return [element(
-        "div",
-        "error",
-        page.reason ?? "Analysis is disabled in this environment."
-      )];
-    }
     if (this.state === "success" && this.analysis) {
       return this.renderAnalysis(this.analysis);
     }

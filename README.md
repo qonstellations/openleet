@@ -5,8 +5,6 @@ complexity of your current LeetCode solution.
 
 On a supported LeetCode problem, OpenLeet can:
 
-- Explain the approach used by your code.
-- Compare it with a recommended approach.
 - Analyse time and space complexity.
 - Highlight trade-offs and possible improvements.
 - Show a visual comparison of supported complexity classes.

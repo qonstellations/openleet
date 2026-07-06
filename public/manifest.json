@@ -16,7 +16,7 @@
   "host_permissions": ["https://leetcode.com/*"],
   "background": { "service_worker": "background.js", "type": "module" },
   "content_scripts": [{
-    "matches": ["https://leetcode.com/*"],
+    "matches": ["https://leetcode.com/problems/*"],
     "js": ["content.js"],
     "run_at": "document_idle"
   }],
